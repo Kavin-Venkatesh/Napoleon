@@ -1,11 +1,11 @@
 const express = require('express');
-const Batch = require('../models/batch');
+const Analytics = require('../models/analytics');
 const router = express.Router();
 
 router.post('/addBatch', async (req, res) => {
     try {
         const { year, totalStudents, studentsPlaced, studentsInterest, studentsNotInterest, studentsNotPlaced, NumberofCompanies, NumberofOffers, PlacementPercentage, avSalary, highSalary, lowSalary, proofCount } = req.body;
-        const batch = new Batch({ year, totalStudents, studentsPlaced, studentsInterest, studentsNotInterest, studentsNotPlaced, NumberofCompanies, NumberofOffers, PlacementPercentage, avSalary, highSalary, lowSalary, proofCount });
+        const batch = new Analytics({ year, totalStudents, studentsPlaced, studentsInterest, studentsNotInterest, studentsNotPlaced, NumberofCompanies, NumberofOffers, PlacementPercentage, avSalary, highSalary, lowSalary, proofCount });
         await batch.save();
         res.json({ message: 'Batch created successfully' ,batch});
     }
@@ -18,7 +18,7 @@ router.post('/addBatch', async (req, res) => {
 
 router.get('/getBatch', async(req,res)=>{
     try{
-        const batches = await Batch.find().select('year _id');
+        const batches = await Analytics.find().select('year _id');
         res.json(batches);
     }
     catch(err){
@@ -29,7 +29,7 @@ router.get('/getBatch', async(req,res)=>{
 
 router.get('/getBatch/:id', async(req,res)=>{
     try{
-        const batch = await Batch.findById(req.params.id);
+        const batch = await Analytics.findById(req.params.id);
         res.json(batch);
     }
     catch(err){
