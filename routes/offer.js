@@ -173,8 +173,6 @@ router.get('/detailsPage/:id', async (req, res) => {
 
 router.get('/downloadPDF/:id', async (req, res) => {
     try {
-        console.log('Download PDF');
-        console.log(req.params.id);
         const offer = await Offer.findById(req.params.id);
         if (!offer) {
             return res.status(404).json({ message: 'Offer not found' });
