@@ -39,4 +39,20 @@ router.get('/getBatch/:id', async(req,res)=>{
 });
 
 
+router.delete('/deleteAnalytics/:id', async(req, res) =>{
+    try{
+        const batchId = req.params.id;
+        const batch =  await Analytics.findByIdAndDelete(batchId);
+
+        if(!batch){
+            return res.status(404).json({message : "Batch not found"});
+        }
+        res.status(200).json({ message : "Batch Analytics deleted Successfully"})
+    }catch (err){
+        console.log(err);
+        res.status(500).json({message : "Something went wrong"});
+    }
+})
+
+
 module.exports = router;

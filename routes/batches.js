@@ -32,13 +32,28 @@ router.get('/getBatch', async(req,res)=>{
     }
 });
 
+router.delete('/deleteBatch/:id', async (req, res) => {
+    try {
+        const batchId = req.params.id;
+        const batch = await Batch.findByIdAndDelete(batchId);
+        if (!batch) {
+            return res.status(404).json({ message: 'Batch not found' });
+        }
+        await Offer.deleteMany({ batch: batchId });
+        res.status(200).json({ message: 'Batch and associated offers deleted successfully' });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: 'Something went wrong' });
+    }
+});
+
 
 router.get('/batchStudentDetails/:batchId', async (req, res) => {
     try {
         const batchId = req.params.batchId;
         const offers = await Offer.find({ 
             batch: batchId,
-            status: { $in: ['Approved', 'Rejected'] } // Filter by approved and rejected statuses
+            status: { $in: ['Approved', 'Rejected'] }
         }).select('name rollNo branch companyName companyCtc status');
 
         if (!offers.length) {
