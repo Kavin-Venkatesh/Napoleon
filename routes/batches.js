@@ -47,7 +47,6 @@ router.delete('/deleteBatch/:id', async (req, res) => {
     }
 });
 
-
 router.get('/batchStudentDetails/:batchId', async (req, res) => {
     try {
         const batchId = req.params.batchId;
@@ -84,7 +83,8 @@ router.post('/download/pdf', async (req, res) => {
             batch: batchId,
             status: { $in: ['Approved', 'Rejected'] }
         }).select(selectedFields.join(' ')).populate('availableProofs');
-
+        
+        console.log('Offers length', offers.length);
         if (!offers.length) {
             return res.status(404).json({ message: 'No approved or rejected students found for this batch' });
         }
@@ -107,7 +107,7 @@ router.post('/download/pdf', async (req, res) => {
 
         let yPosition = height - margin - 40;
         const lineHeight = 15;
-        const labelWidth = 150; // Fixed width for labels
+        const labelWidth = 150; 
 
         for (const offer of offers) {
             selectedFields.forEach(field => {
@@ -120,44 +120,49 @@ router.post('/download/pdf', async (req, res) => {
                 });
                 yPosition -= lineHeight;
             });
-            yPosition -= 20;
+            yPosition -= 10;
 
             for (const proof of offer.availableProofs) {
                 if (proof.filePath) {
-                    page.drawText(`Proof - ${offer.rollNo}`, {
-                        x: margin,
-                        y: yPosition,
-                        size: 10,
-                        font: courierFont,
-                        color: rgb(0, 0, 0),
-                    });
                     yPosition -= lineHeight;
 
-                    if (proof.fileType === 'application/pdf') {
-                        const response = await axios.get(`http://localhost:5000/${proof.filePath}`, { responseType: 'arraybuffer' });
-                        const proofPdfBytes = response.data;
-                        const proofPdfDoc = await PDFDocument.load(proofPdfBytes);
-                        const copiedPages = await pdfDoc.copyPages(proofPdfDoc, proofPdfDoc.getPageIndices());
-                        copiedPages.forEach((copiedPage) => {
-                            pdfDoc.addPage(copiedPage);
-                        });
-                    } else if (proof.fileType.startsWith('image/')) {
-                        const response = await axios.get(`http://localhost:5000/${proof.filePath}`, { responseType: 'arraybuffer' });
-                        let img;
-                        if (proof.fileType === 'image/png') {
-                            img = await pdfDoc.embedPng(response.data);
-                        } else if (proof.fileType === 'image/jpeg') {
-                            img = await pdfDoc.embedJpg(response.data);
-                        } else {
-                            throw new Error('Unsupported image format');
+                    try {
+                        if (proof.fileType === 'application/pdf') {
+                            const response = await axios.get(`http://localhost:5000/${proof.filePath}`, { responseType: 'arraybuffer' });
+                            const proofPdfBytes = response.data;
+                            const proofPdfDoc = await PDFDocument.load(proofPdfBytes);
+                            const copiedPages = await pdfDoc.copyPages(proofPdfDoc, proofPdfDoc.getPageIndices());
+                            copiedPages.forEach((copiedPage) => {
+                                pdfDoc.addPage(copiedPage);
+                            });
+                        } else if (proof.fileType.startsWith('image/')) {
+                            const response = await axios.get(`http://localhost:5000/${proof.filePath}`, { responseType: 'arraybuffer' });
+                            let img;
+                            if (proof.fileType === 'image/png') {
+                                img = await pdfDoc.embedPng(response.data);
+                            } else if (proof.fileType === 'image/jpeg') {
+                                img = await pdfDoc.embedJpg(response.data);
+                            } else {
+                                throw new Error('Unsupported image format');
+                            }
+                            const imgPage = pdfDoc.addPage();
+                            imgPage.drawImage(img, {
+                                x: margin,
+                                y: height - img.height / 2 - margin,
+                                width: img.width / 2,
+                                height: img.height / 2,
+                            });
                         }
-                        const imgPage = pdfDoc.addPage();
-                        imgPage.drawImage(img, {
+                    } catch (proofError) {
+                        console.error(`Error processing proof for offer ${offer.rollNo}:`, proofError);
+                        page.drawText(`Error processing proof: ${proofError.message}`, {
                             x: margin,
-                            y: height - img.height / 2 - margin,
-                            width: img.width / 2,
-                            height: img.height / 2,
+                            y: yPosition,
+                            size: 10,
+                            font: courierFont,
+                            color: rgb(1, 0, 0),
                         });
+                        yPosition -= lineHeight;
                     }
                 }
             }
@@ -168,7 +173,7 @@ router.post('/download/pdf', async (req, res) => {
         res.setHeader('Content-Disposition', 'attachment; filename=students_details.pdf');
         res.send(Buffer.from(pdfBytes));
     } catch (err) {
-        console.log(err);
+        console.error('Error generating PDF:', err);
         res.status(500).json({ message: 'Something went wrong' });
     }
 });

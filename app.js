@@ -22,7 +22,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(externalFilesPath));
 
-
 app.use('/auth', authRouter);
 app.use('/analytics', analyticsRouter);
 app.use('/offer', offerRouter);
