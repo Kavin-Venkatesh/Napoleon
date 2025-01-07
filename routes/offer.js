@@ -36,11 +36,12 @@ router.post('/addOffer', upload.fields([
             name,
             registerNumber,
             gender,
-            dob,
+            dob,    
             mobileNumber,
             degree,
             branch,
             batchName,
+            batch,
             companyName,
             companyCategory,
             organizedBy,
@@ -53,12 +54,6 @@ router.post('/addOffer', upload.fields([
         } = req.body;
 
         const files = req.files;
-
-        const batch = await Batch.findOne({ name: batchName });
-        if (!batch) {
-            return res.status(400).json({ message: 'Invalid batch name' });
-        }
-
         const proofs = [];
         if (files.mailConfirmationFile) {
             proofs.push({
@@ -97,13 +92,13 @@ router.post('/addOffer', upload.fields([
             userId,
             name,
             rollNo: registerNumber,
-            Gender: gender,
-            dob: dob,
+            gender : gender,
+            dob,
             mobile: mobileNumber,
             degree,
             branch,
-            batch: batch._id, 
-            batchName: batch.batchName,  
+            batch, 
+            batchName,
             companyName,
             companyCategory,
             organizedBy,
@@ -124,7 +119,6 @@ router.post('/addOffer', upload.fields([
         res.status(500).json({ message: 'Something went wrong' });
     }
 });
-
 
 
 router.get('/getoffers', async (req, res) => {
@@ -202,7 +196,7 @@ router.get('/downloadPDF/:id', async (req, res) => {
         const details = [
             { label: 'Name:', value: offer.name },
             { label: 'Roll Number:', value: offer.rollNo },
-            { label: 'Gender:', value: offer.Gender },
+            { label: 'Gender:', value: offer.gender },
             { label: 'Date of Birth:', value: offer.dob.toISOString().split('T')[0] },
             { label: 'Mobile Number:', value: offer.mobile },
             { label: 'Degree:', value: offer.degree },
@@ -345,15 +339,24 @@ router.get('/pendingDetails/:id', async (req, res) => {
     }
 });
 
+
+
+
 // Define a PUT route to update offer status by _id
 router.put('/updateStatus/:id', async (req, res) => {
     try {
         const offerId = req.params.id;
         const { status, rejectedReason } = req.body;
 
+
+        const { id } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid offer ID' });
+         }
+
         // Validate ObjectId
         if (!mongoose.Types.ObjectId.isValid(offerId)) {
-            return res.status(400).json({ message: 'Invalid offer ID' });
+            return res.status(404).json({ message: 'Offer not found' });
         }
 
         // Validate status

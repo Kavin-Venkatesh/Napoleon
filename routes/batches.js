@@ -16,7 +16,7 @@ router.post('/createBatch', async (req, res) => {
         res.json({ message: 'Batch created successfully' ,batch});
     }
     catch (err) {
-        console.log(err);
+        // console.log(err);
         res.status(500).json({ message: 'Something went wrong' });
     }
 }); 
@@ -24,6 +24,9 @@ router.post('/createBatch', async (req, res) => {
 router.get('/getBatch', async(req,res)=>{
     try{
         const batches = await Batch.find().select('batchName _id');
+        if (!batches.length) {
+            return res.status(404).json({ message: 'No batches found' });
+        }
         res.json(batches);
     }
     catch(err){
@@ -54,7 +57,7 @@ router.get('/batchStudentDetails/:batchId', async (req, res) => {
             batch: batchId,
             status: { $in: ['Approved', 'Rejected'] }
         }).select('name rollNo branch companyName companyCtc status');
-
+        
         if (!offers.length) {
             return res.status(404).json({ message: 'No approved or rejected students found for this batch' });
         }

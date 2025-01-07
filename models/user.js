@@ -22,6 +22,15 @@ const UserSchema = new mongoose.Schema({
     role: {
         type: String,
         default: 'user'
+    },
+    batch: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Batch',
+        required: function() { return this.role === 'student'; }
+    },
+    batchName: {
+        type: String,
+        required: function() { return this.role === 'student'; }
     }
 });
 

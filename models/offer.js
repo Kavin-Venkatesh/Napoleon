@@ -35,7 +35,7 @@ const OfferSchema = new mongoose.Schema({
         type : String,
         required : true,
     },
-    Gender :{
+    gender :{
         type : String,
         required : true,
     },

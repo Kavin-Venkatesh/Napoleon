@@ -22,7 +22,7 @@ router.get('/getBatch', async(req,res)=>{
         res.json(batches);
     }
     catch(err){
-        console.log(err);
+        // console.log(err);
         res.status(500).json({message : 'Something went wrong'})
     }
 });
@@ -33,7 +33,7 @@ router.get('/getBatch/:id', async(req,res)=>{
         res.json(batch);
     }
     catch(err){
-        console.log(err);
+        // console.log(err);
         res.status(500).json({message : 'Something went wrong'})
     }
 });
@@ -49,7 +49,7 @@ router.delete('/deleteAnalytics/:id', async(req, res) =>{
         }
         res.status(200).json({ message : "Batch Analytics deleted Successfully"})
     }catch (err){
-        console.log(err);
+        // console.log(err);
         res.status(500).json({message : "Something went wrong"});
     }
 })

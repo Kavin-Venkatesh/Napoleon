@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const Batch = require('../models/batch');
 const bcrypt = require('bcrypt');
 
 require('dotenv').config();
@@ -10,27 +11,39 @@ const router = express.Router();
 
 router.post('/register', async (req, res) => {
     try {
-        const { name, registerNumber, email, password, confirmPassword, role } = req.body;
+        const { name, registerNumber, email, password, confirmPassword, role, batch } = req.body;
 
         if (password !== confirmPassword) {
             return res.status(400).json({ message: 'Passwords do not match' });
         }
+
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
+
+        let batchIn;
+        if (role === 'student') {
+            batchIn = await Batch.findById(batch);
+            if (!batchIn) {
+                return res.status(400).json({ message: 'Invalid batch ID' });
+            }
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = new User({
             name,
             registerNumber,
             email,
             password: hashedPassword,
-            role
+            role,
+            ...(role === 'student' && { batch: batchIn._id, batchName: batchIn.batchName })
         });
+
         await user.save();
-        res.json({ message: 'User created successfully' },);
+        res.json({ message: 'User created successfully' });
     } catch (err) {
-        console.log(err);
+        console.error(err);
         res.status(500).json({ message: 'Something went wrong' });
     }
 });
@@ -103,31 +116,34 @@ router.get('/users', async (req, res) => {
         res.status(500).json({ message: 'Something went wrong' });
     }}); 
 
-
 router.put('/updateusers', async (req, res) => {
-        try {
-            const { id, name, rollNo, email, role } = req.body;
-            if (!mongoose.Types.ObjectId.isValid(id)) {
-                return res.status(400).json({ message: 'Invalid user ID' });
-            }
-    
-            const user = await User.findById(id);
-    
-            if (!user) {
-                return res.status(404).json({ message: 'User not found' });
-            }
-    
-            user.name = name || user.name;
-            user.registerNumber = rollNo || user.rollNo;
-            user.email = email || user.email;
-            user.role = role || user.role;
-            await user.save();
-            res.status(200).json({ message: 'User updated successfully' });
-        } catch (err) {
-            console.log(err);
-            res.status(500).json({ message: 'Something went wrong' });
+    try {
+        const { _id, name, registerNumber, email, role } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(_id)) {
+            console.log('Invalid ID:', _id); // Debugging log
+            return res.status(400).json({ message: 'Invalid user ID' });
         }
+
+        const user = await User.findById(_id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.name = name || user.name;
+        user.registerNumber = registerNumber || user.registerNumber;
+        user.email = email || user.email;
+        user.role = role || user.role;
+
+        await user.save();
+        res.status(200).json({ message: 'User updated successfully' });
+    } catch (err) {
+        console.error('Error occurred:', err);
+        res.status(500).json({ message: 'Something went wrong' });
+    }
 });
+
+
 
 router.delete('/deleteusers', async (req, res) => {
         try {
@@ -151,7 +167,27 @@ router.delete('/deleteusers', async (req, res) => {
             console.log(err);
             res.status(500).json({ message: 'Something went wrong' });
         }
-    });
-    
+});
+
+router.get('/user/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: `Invalid user ID: ${userId}` });
+        }
+
+        const user = await User.findById(userId).select('name registerNumber batchName batch');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Something went wrong'});
+    }
+});
+
+
 
 module.exports = router;
