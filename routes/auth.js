@@ -51,6 +51,7 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
+        // console.log(email, password);
 
         // Input validation
         if (!email || !password) {
@@ -189,5 +190,52 @@ router.get('/user/:id', async (req, res) => {
 });
 
 
+
+router.get('/individualDetail/:id' ,async(req , res) =>{
+    try{
+        const userId = req.params.id;
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: `Invalid user ID: ${userId}` });
+        }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(user);
+    }
+    catch(err){
+        console.error(err);
+        res.status(500).json({ message: 'Something went wrong'});
+    }
+})
+
+router.put('/changePassword', async (req, res) => {
+    const { studentId, newPassword } = req.body;
+    // console.log(newPassword);
+
+    if (!studentId || !newPassword) {
+        return res.status(400).json({ message: 'Student ID and new password are required.' });
+    }
+
+    try {
+        const user = await User.findById(studentId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update the user's password
+        user.password = hashedPassword;
+        await user.save();
+
+        res.status(200).json({ message: 'Password changed successfully.' });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).json({ message: 'An error occurred while changing the password. Please try again later.' });
+    }
+});
 
 module.exports = router;
