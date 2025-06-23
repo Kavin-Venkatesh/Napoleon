@@ -1,8 +1,8 @@
 // Description: This file is the entry point of the application. It starts the server and connects to the database.
 const http = require('http');
 const dotenv = require('dotenv');
-const db = require('./src/config/db');
-const app = require('./src/app');
+const db = require('../src/config/db');
+const app = require('../src/app');
 
 
 dotenv.config();
