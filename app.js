@@ -10,12 +10,12 @@ const BatchRouter = require('./routes/batches');
 const app = express();
 
 const corsOptions = {
-    origin: 'http://localhost:8080' ||  'http://localhost:3000',
+    origin: 'http://localhost:8080' ||  'https://zeusbcc.vercel.app/',
     credentials: true,
     optionsSuccessStatus: 200
-    };
+};
 
-// const externalFilesPath = path.join('D:', '/App/BCC/Server/Server/uploads');
+
 const uploadsPath = path.join(__dirname, 'uploads');
 
 app.use(cors(corsOptions));
@@ -27,6 +27,11 @@ app.use('/auth', authRouter);
 app.use('/analytics', analyticsRouter);
 app.use('/offer', offerRouter);
 app.use('/batches', BatchRouter);
+
+// Health check route
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', message: 'Backend is online' });
+});
 
 module.exports = app;
 
