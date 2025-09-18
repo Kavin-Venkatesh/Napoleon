@@ -8,135 +8,300 @@ const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const axios = require('axios');
 const fs = require('fs');
 const router = express.Router();
+// const { getUploadsPath } = require('../config/paths');
 
-// const uploadDir = 'uploads/';
+// // const uploadDir = 'uploads/';
+// // if (!fs.existsSync(uploadDir)) {
+// //     fs.mkdirSync(uploadDir, { recursive: true });
+// // }
+
+// // const storage = multer.diskStorage({
+// //     destination: function (req, file, cb) {
+// //         cb(null, uploadDir);
+// //     },
+// //     filename: function (req, file, cb) {
+// //         cb(null, Date.now() + path.extname(file.originalname));
+// //     }
+// // });
+
+
+// // const uploadDir = path.join(__dirname, '../uploads');
+
+
+// // Make sure directory exists
 // if (!fs.existsSync(uploadDir)) {
 //     fs.mkdirSync(uploadDir, { recursive: true });
 // }
 
 // const storage = multer.diskStorage({
 //     destination: function (req, file, cb) {
-//         cb(null, uploadDir);
+//         const uploadsPath = getUploadsPath();
+//         cb(null, uploadsPath);
 //     },
+
 //     filename: function (req, file, cb) {
 //         cb(null, Date.now() + path.extname(file.originalname));
 //     }
 // });
 
 
+// const upload = multer({ storage: storage });
+
+// router.post('/addOffer', upload.fields([
+//     { name: 'mailConfirmationFile', maxCount: 1 },
+//     { name: 'internshipLetterFile', maxCount: 1 },
+//     { name: 'letterOfIntentFile', maxCount: 1 },
+//     { name: 'offerLetterFile', maxCount: 1 }
+// ]), async (req, res) => {
+//     try {
+//         const {
+//             name,
+//             registerNumber,
+//             gender,
+//             dob,
+//             mobileNumber,
+//             degree,
+//             branch,
+//             batchName,
+//             batch,
+//             companyName,
+//             companyCategory,
+//             organizedBy,
+//             companyLocation,
+//             internshipDate,
+//             stipend,
+//             salary,
+//             placedDate,
+//             userId
+//         } = req.body;
+
+//         const files = req.files;
+//         // const proofs = [];
+//         // if (files.mailConfirmationFile) {
+//         //     proofs.push({
+//         //         type: 'mail confirmation',
+//         //         filePath: files.mailConfirmationFile[0].path,
+//         //         fileType: files.mailConfirmationFile[0].mimetype,
+//         //         originalFileName: files.mailConfirmationFile[0].originalname
+//         //     });
+//         // }
+//         // if (files.internshipLetterFile) {
+//         //     proofs.push({
+//         //         type: 'Internship letter',
+//         //         filePath: files.internshipLetterFile[0].path,
+//         //         fileType: files.internshipLetterFile[0].mimetype,
+//         //         originalFileName: files.internshipLetterFile[0].originalname
+//         //     });
+//         // }
+//         // if (files.letterOfIntentFile) {
+//         //     proofs.push({
+//         //         type: 'letter of intent',
+//         //         filePath: files.letterOfIntentFile[0].path,
+//         //         fileType: files.letterOfIntentFile[0].mimetype,
+//         //         originalFileName: files.letterOfIntentFile[0].originalname
+//         //     });
+//         // }
+//         // if (files.offerLetterFile) {
+//         //     proofs.push({
+//         //         type: 'offer letter',
+//         //         filePath: files.offerLetterFile[0].path,
+//         //         fileType: files.offerLetterFile[0].mimetype,
+//         //         originalFileName: files.offerLetterFile[0].originalname
+//         //     });
+//         // }
+
+//         const proofs = [];
+
+//         if (files.mailConfirmationFile) {
+//             proofs.push({
+//                 type: 'mail confirmation',
+//                 filePath: `uploads/${files.mailConfirmationFile[0].filename}`, // ✅ relative path
+//                 fileType: files.mailConfirmationFile[0].mimetype,
+//                 originalFileName: files.mailConfirmationFile[0].originalname
+//             });
+//         }
+
+//         if (files.internshipLetterFile) {
+//             proofs.push({
+//                 type: 'Internship letter',
+//                 filePath: `uploads/${files.internshipLetterFile[0].filename}`, // ✅
+//                 fileType: files.internshipLetterFile[0].mimetype,
+//                 originalFileName: files.internshipLetterFile[0].originalname
+//             });
+//         }
+
+//         if (files.letterOfIntentFile) {
+//             proofs.push({
+//                 type: 'letter of intent',
+//                 filePath: `uploads/${files.letterOfIntentFile[0].filename}`, // ✅
+//                 fileType: files.letterOfIntentFile[0].mimetype,
+//                 originalFileName: files.letterOfIntentFile[0].originalname
+//             });
+//         }
+
+//         if (files.offerLetterFile) {
+//             proofs.push({
+//                 type: 'offer letter',
+//                 filePath: `uploads/${files.offerLetterFile[0].filename}`, // ✅
+//                 fileType: files.offerLetterFile[0].mimetype,
+//                 originalFileName: files.offerLetterFile[0].originalname
+//             });
+//         }
+
+//         const offer = new Offer({
+//             userId,
+//             name,
+//             rollNo: registerNumber,
+//             gender: gender,
+//             dob,
+//             mobile: mobileNumber,
+//             degree,
+//             branch,
+//             batch,
+//             batchName,
+//             companyName,
+//             companyCategory,
+//             organizedBy,
+//             companyLocation,
+//             internshipDate,
+//             stipend,
+//             companyCtc: salary,
+//             placedDate,
+//             availableProofs: proofs,
+//             status: 'Pending',
+//             rejectedReason: ''
+//         });
+//         await offer.save();
+
+//         res.json({ message: 'Offer created successfully' });
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).json({ message: 'Something went wrong' });
+//     }
+// });
+
+
 const uploadDir = path.join(__dirname, '../uploads');
 
-// Make sure directory exists
+// Make sure uploads folder exists
 if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
 });
-
 
 const upload = multer({ storage: storage });
 
-router.post('/addOffer', upload.fields([
+// ----------------------
+// Add Offer Route
+// ----------------------
+router.post(
+  '/addOffer',
+  upload.fields([
     { name: 'mailConfirmationFile', maxCount: 1 },
     { name: 'internshipLetterFile', maxCount: 1 },
     { name: 'letterOfIntentFile', maxCount: 1 },
     { name: 'offerLetterFile', maxCount: 1 }
-]), async (req, res) => {
+  ]),
+  async (req, res) => {
     try {
-        const {
-            name,
-            registerNumber,
-            gender,
-            dob,    
-            mobileNumber,
-            degree,
-            branch,
-            batchName,
-            batch,
-            companyName,
-            companyCategory,
-            organizedBy,
-            companyLocation,
-            internshipDate,
-            stipend,
-            salary,
-            placedDate,
-            userId
-        } = req.body;
+      const {
+        name,
+        registerNumber,
+        gender,
+        dob,
+        mobileNumber,
+        degree,
+        branch,
+        batchName,
+        batch,
+        companyName,
+        companyCategory,
+        organizedBy,
+        companyLocation,
+        internshipDate,
+        stipend,
+        salary,
+        placedDate,
+        userId
+      } = req.body;
 
-        const files = req.files;
-        const proofs = [];
-        if (files.mailConfirmationFile) {
-            proofs.push({
-                type: 'mail confirmation',
-                filePath: files.mailConfirmationFile[0].path,
-                fileType: files.mailConfirmationFile[0].mimetype,
-                originalFileName: files.mailConfirmationFile[0].originalname
-            });
-        }
-        if (files.internshipLetterFile) {
-            proofs.push({
-                type: 'Internship letter',
-                filePath: files.internshipLetterFile[0].path,
-                fileType: files.internshipLetterFile[0].mimetype,
-                originalFileName: files.internshipLetterFile[0].originalname
-            });
-        }
-        if (files.letterOfIntentFile) {
-            proofs.push({
-                type: 'letter of intent',
-                filePath: files.letterOfIntentFile[0].path,
-                fileType: files.letterOfIntentFile[0].mimetype,
-                originalFileName: files.letterOfIntentFile[0].originalname
-            });
-        }
-        if (files.offerLetterFile) {
-            proofs.push({
-                type: 'offer letter',
-                filePath: files.offerLetterFile[0].path,
-                fileType: files.offerLetterFile[0].mimetype,
-                originalFileName: files.offerLetterFile[0].originalname
-            });
-        }
+      const files = req.files;
+      const proofs = [];
 
-        const offer = new Offer({
-            userId,
-            name,
-            rollNo: registerNumber,
-            gender : gender,
-            dob,
-            mobile: mobileNumber,
-            degree,
-            branch,
-            batch, 
-            batchName,
-            companyName,
-            companyCategory,
-            organizedBy,
-            companyLocation,
-            internshipDate,
-            stipend,
-            companyCtc: salary,
-            placedDate,
-            availableProofs: proofs,
-            status: 'Pending',
-            rejectedReason: ''
+      if (files.mailConfirmationFile) {
+        proofs.push({
+          type: 'mail confirmation',
+          filePath: `uploads/${files.mailConfirmationFile[0].filename}`, // ✅ relative
+          fileType: files.mailConfirmationFile[0].mimetype,
+          originalFileName: files.mailConfirmationFile[0].originalname
         });
-        await offer.save();
+      }
+      if (files.internshipLetterFile) {
+        proofs.push({
+          type: 'Internship letter',
+          filePath: `uploads/${files.internshipLetterFile[0].filename}`,
+          fileType: files.internshipLetterFile[0].mimetype,
+          originalFileName: files.internshipLetterFile[0].originalname
+        });
+      }
+      if (files.letterOfIntentFile) {
+        proofs.push({
+          type: 'letter of intent',
+          filePath: `uploads/${files.letterOfIntentFile[0].filename}`,
+          fileType: files.letterOfIntentFile[0].mimetype,
+          originalFileName: files.letterOfIntentFile[0].originalname
+        });
+      }
+      if (files.offerLetterFile) {
+        proofs.push({
+          type: 'offer letter',
+          filePath: `uploads/${files.offerLetterFile[0].filename}`,
+          fileType: files.offerLetterFile[0].mimetype,
+          originalFileName: files.offerLetterFile[0].originalname
+        });
+      }
 
-        res.json({ message: 'Offer created successfully' });
+      const offer = new Offer({
+        userId,
+        name,
+        rollNo: registerNumber,
+        gender,
+        dob,
+        mobile: mobileNumber,
+        degree,
+        branch,
+        batch,
+        batchName,
+        companyName,
+        companyCategory,
+        organizedBy,
+        companyLocation,
+        internshipDate,
+        stipend,
+        companyCtc: salary,
+        placedDate,
+        availableProofs: proofs,
+        status: 'Pending',
+        rejectedReason: ''
+      });
+
+      await offer.save();
+
+      res.json({ message: 'Offer created successfully' });
     } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: 'Something went wrong' });
+      console.log(err);
+      res.status(500).json({ message: 'Something went wrong' });
     }
-});
+  }
+);
 
 
 router.get('/getoffers', async (req, res) => {
@@ -313,28 +478,28 @@ router.get('/downloadPDF/:id', async (req, res) => {
     }
 });
 //Route to get all pending offers 
-router.get('/pendingOffers' , async(req , res)=>{
+router.get('/pendingOffers', async (req, res) => {
     try {
-        const pendingOffers = await Offer.find({ status : 'Pending'});
+        const pendingOffers = await Offer.find({ status: 'Pending' });
         if (!pendingOffers || pendingOffers.length === 0) {
             return res.status(404).json({ message: 'No pending offers found' });
         }
 
-        const filteredOffers = pendingOffers.map((offer , index) =>(
-            {   
-                id : offer._id,
-                name : offer.name,
-                rollNumber : offer.rollNo,
-                branch : offer.branch,
-                companyName : offer.companyName,
-                salaryPackage : offer.companyCtc,
-                status : offer.status,
-    
+        const filteredOffers = pendingOffers.map((offer, index) => (
+            {
+                id: offer._id,
+                name: offer.name,
+                rollNumber: offer.rollNo,
+                branch: offer.branch,
+                companyName: offer.companyName,
+                salaryPackage: offer.companyCtc,
+                status: offer.status,
+
             }));
 
-            res.status(200).json(filteredOffers);
+        res.status(200).json(filteredOffers);
     }
-    catch{
+    catch {
         console.error('Error fetching pending offers:', error);
         res.status(500).json({ message: 'Failed to fetch pending offers' });
     }
@@ -368,9 +533,9 @@ router.put('/updateStatus/:id', async (req, res) => {
 
 
         const { id } = req.params;
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ message: 'Invalid offer ID' });
-         }
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid offer ID' });
+        }
 
         // Validate ObjectId
         if (!mongoose.Types.ObjectId.isValid(offerId)) {
