@@ -9,10 +9,21 @@ const BatchRouter = require('./routes/batches');
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:8080',
+  'https://zeusbcc.vercel.app'
+];
+
 const corsOptions = {
-    origin: 'http://localhost:8080' ||  'https://zeusbcc.vercel.app/',
-    credentials: true,
-    optionsSuccessStatus: 200
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200
 };
 
 
