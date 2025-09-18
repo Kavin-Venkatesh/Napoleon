@@ -15,12 +15,13 @@ const corsOptions = {
     optionsSuccessStatus: 200
     };
 
-const externalFilesPath = path.join('D:', '/App/BCC/Server/Server/uploads');
+// const externalFilesPath = path.join('D:', '/App/BCC/Server/Server/uploads');
+const uploadsPath = path.join(__dirname, 'uploads');
 
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(externalFilesPath));
+app.use('/uploads', express.static(uploadsPath));
 
 app.use('/auth', authRouter);
 app.use('/analytics', analyticsRouter);
